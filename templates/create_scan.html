@@ -1,0 +1,1123 @@
+{% extends "base.html" %}
+
+{% block title %}Create Custom Scan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scan-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+    }
+    
+    .scan-settings {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .setting-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .setting-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .setting-group select, 
+    .setting-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .conditions-container {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+    }
+    
+    .condition-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+    
+    .condition-row select,
+    .condition-row input {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 120px;
+    }
+    
+    .condition-row .indicator-select {
+        min-width: 180px;
+    }
+    
+    .condition-row .value-input {
+        min-width: 80px;
+    }
+    
+    .add-condition-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .add-condition-btn:hover {
+        background-color: #2980b9;
+    }
+    
+    .remove-condition-btn {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .remove-condition-btn:hover {
+        background-color: #c0392b;
+    }
+    
+    .logical-operator {
+        font-weight: bold;
+        margin: 0 10px;
+    }
+    
+    .scan-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        border: none;
+        font-weight: bold;
+    }
+    
+    .btn-primary {
+        background-color: #3498db;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+    
+    .btn-success {
+        background-color: #27ae60;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background-color: #219653;
+    }
+    
+    .btn-secondary {
+        background-color: #95a5a6;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #7f8c8d;
+    }
+    
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+    }
+    
+    .results-table th, .results-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    
+    .results-table th {
+        background-color: #333;
+        color: white;
+    }
+    
+    .results-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    
+    .note-box {
+        background-color: #fff8e1;
+        border-left: 4px solid #ffc107;
+        padding: 10px;
+        margin-top: 20px;
+    }
+    
+    .live-badge {
+        background-color: #e74c3c;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    
+    .strategy-name {
+        margin-bottom: 15px;
+    }
+    
+    .strategy-name input {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 300px;
+    }
+    
+    .saved-strategies {
+        margin-top: 30px;
+    }
+    
+    .strategy-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    
+    .strategy-list li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .strategy-list li:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .strategy-actions a {
+        margin-left: 10px;
+        color: #3498db;
+        text-decoration: none;
+    }
+    
+    .strategy-actions a:hover {
+        text-decoration: underline;
+    }
+    
+    .progress-container {
+        width: 100%;
+        background-color: #f1f1f1;
+        border-radius: 4px;
+        margin: 20px 0;
+        display: none;
+    }
+    
+    .progress-bar {
+        height: 20px;
+        background-color: #4CAF50;
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.3s;
+        text-align: center;
+        color: white;
+    }
+    
+    .price-up {
+        color: green;
+    }
+    
+    .price-down {
+        color: red;
+    }
+    
+    .trend-bullish {
+        color: green;
+        font-weight: bold;
+    }
+    
+    .trend-bearish {
+        color: red;
+        font-weight: bold;
+    }
+    
+    .timeframe-group {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .timeframe-group select {
+        flex: 1;
+    }
+    
+    .condition-timeframe {
+        min-width: 100px;
+    }
+    
+    .predefined-strategies {
+        margin-bottom: 30px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        background-color: #f9f9f9;
+    }
+    
+    .strategy-btn {
+        margin-right: 10px;
+        margin-bottom: 10px;
+        padding: 8px 15px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .strategy-btn:hover {
+        background-color: #2980b9;
+    }
+    
+    .strategy-btn.active {
+        background-color: #2ecc71;
+    }
+    
+    .strategy-description {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #e8f4fc;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scan-container">
+    <h1>Create Advanced Stock Scan</h1>
+    
+    <!-- Predefined Strategies Section -->
+    <div class="predefined-strategies">
+        <h3>Predefined Strategies</h3>
+        <button class="strategy-btn" data-strategy="swing">Swing Trading</button>
+        <button class="strategy-btn" data-strategy="intraday">Intraday Breakout</button>
+        <button class="strategy-btn" data-strategy="momentum">Momentum</button>
+        <button class="strategy-btn" data-strategy="custom">Custom Strategy</button>
+        
+        <div class="strategy-description" id="strategy-description">
+            Select a strategy to load its predefined conditions or create your own custom scan.
+        </div>
+    </div>
+    
+    <div class="scan-settings">
+        <div class="setting-group">
+            <label for="segment">Stock Segment</label>
+            <select id="segment">
+                <option value="nifty50">Nifty 50</option>
+                <option value="nifty200">Nifty 200</option>
+                <option value="nifty500">Nifty 500</option>
+                <option value="smallcap">Small Cap</option>
+                <option value="all">All Stocks</option>
+            </select>
+        </div>
+        
+        <div class="setting-group">
+            <label for="strategy-type">Trend Filter</label>
+            <select id="strategy-type">
+                <option value="all">Show All</option>
+                <option value="bullish">Bullish Only</option>
+                <option value="bearish">Bearish Only</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="strategy-name">
+        <label for="strategy-name">Scan Name (Optional)</label>
+        <input type="text" id="strategy-name" placeholder="Enter a name for your scan">
+    </div>
+    
+    <div class="conditions-container">
+        <h3>Scan Conditions</h3>
+        <div id="conditions-wrapper">
+            <!-- Conditions will be added here -->
+        </div>
+        
+        <button class="add-condition-btn" id="add-condition">Add Condition</button>
+    </div>
+    
+    <div class="progress-container" id="progress-container">
+        <div class="progress-bar" id="progress-bar">0%</div>
+    </div>
+    
+    <div class="scan-actions">
+        <button class="btn btn-secondary" id="save-scan">Save Scan</button>
+        <button class="btn btn-primary" id="test-scan">Test Conditions</button>
+        <button class="btn btn-success" id="run-scan">Run Scan</button>
+    </div>
+    
+    <table class="results-table" id="scan-results" style="display: none;">
+        <thead>
+            <tr>
+                <th>Stock</th>
+                <th>Price</th>
+                <th>Open</th>
+                <th>Close</th>
+                <th>Volume</th>
+                <th>Trend</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="results-body">
+            <!-- Results will be populated here -->
+        </tbody>
+    </table>
+    
+    <div class="note-box">
+        <p>Note: Data is refreshed in real-time. Scans will use the most recent market data.</p>
+    </div>
+    
+    <div class="saved-strategies" id="saved-strategies" style="display: none;">
+        <h3>Your Saved Scans</h3>
+        <ul class="strategy-list" id="strategy-list">
+            <!-- Saved strategies will be listed here -->
+        </ul>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Available indicators
+    const indicators = [
+        { name: "Close Price", value: "close" },
+        { name: "Open Price", value: "open" },
+        { name: "High Price", value: "high" },
+        { name: "Low Price", value: "low" },
+        { name: "Volume", value: "volume" },
+        { name: "% Change", value: "pct_change" },
+        { name: "RSI(14)", value: "rsi" },
+        { name: "EMA(9)", value: "ema9" },
+        { name: "EMA(20)", value: "ema20" },
+        { name: "EMA(50)", value: "ema50" },
+        { name: "EMA(100)", value: "ema100" },
+        { name: "EMA(200)", value: "ema200" },
+        { name: "SMA(20)", value: "sma20" },
+        { name: "SMA(50)", value: "sma50" },
+        { name: "SMA(100)", value: "sma100" },
+        { name: "SMA(200)", value: "sma200" },
+        { name: "RSI EMA(20)", value: "rsi_ema20" },
+        { name: "MACD Line", value: "macd_line" },
+        { name: "MACD Signal", value: "macd_signal" },
+        { name: "MACD Histogram", value: "macd_hist" },
+        { name: "SuperTrend(10,3)", value: "supertrend_10_3" },
+        { name: "SuperTrend(7,3)", value: "supertrend_7_3" },
+        { name: "Bollinger Upper(20,2)", value: "bb_upper" },
+        { name: "Bollinger Lower(20,2)", value: "bb_lower" },
+        { name: "Bollinger Middle(20,2)", value: "bb_middle" },
+        { name: "Chande Kroll Stop Long", value: "cks_long" },
+        { name: "Chande Kroll Stop Short", value: "cks_short" },
+        { name: "ATR(14)", value: "atr_14" },
+        { name: "ADX(14)", value: "adx_14" },
+        { name: "DI+", value: "di_plus" },
+        { name: "DI-", value: "di_minus" },
+        { name: "Trend", value: "trend" }
+    ];
+    
+    // Comparison operators
+    const operators = [
+        { name: ">", value: ">" },
+        { name: "<", value: "<" },
+        { name: ">=", value: ">=" },
+        { name: "<=", value: "<=" },
+        { name: "==", value: "==" },
+        { name: "!=", value: "!=" },
+        { name: "Crossed Above", value: "crossed_above" },
+        { name: "Crossed Below", value: "crossed_below" },
+        { name: "Above", value: "above" },
+        { name: "Below", value: "below" }
+    ];
+    
+    // Timeframes for conditions
+    const timeframes = [
+        { name: "Daily", value: "1d" },
+        { name: "Weekly", value: "1wk" },
+        { name: "Monthly", value: "1mo" },
+        { name: "Yearly", value: "1y" },
+        { name: "5 Min", value: "5m" },
+        { name: "15 Min", value: "15m" },
+        { name: "1 Hour", value: "1h" }
+    ];
+    
+// Stock lists for different segments
+const STOCK_LISTS = {
+    nifty50: [
+        "^NSEI",  // Nifty 50 Index
+        "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
+        "HINDUNILVR.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "LICI.NS",
+        "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "ASIANPAINT.NS",
+        "MARUTI.NS", "TITAN.NS", "BAJFINANCE.NS", "TATASTEEL.NS", "POWERGRID.NS",
+        "NTPC.NS", "ULTRACEMCO.NS", "SUNPHARMA.NS", "TATAMOTORS.NS", "ADANIENT.NS",
+        "BAJAJ-AUTO.NS", "WIPRO.NS", "ONGC.NS", "JSWSTEEL.NS", "HCLTECH.NS",
+        "TATACONSUM.NS", "NESTLEIND.NS", "INDUSINDBK.NS", "COALINDIA.NS", "BPCL.NS"
+    ],
+    nifty200: [
+        // Nifty 50 stocks
+        "^NSEI", "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
+        "HINDUNILVR.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "LICI.NS",
+        "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "ASIANPAINT.NS",
+        "MARUTI.NS", "TITAN.NS", "BAJFINANCE.NS", "TATASTEEL.NS", "POWERGRID.NS",
+        "NTPC.NS", "ULTRACEMCO.NS", "SUNPHARMA.NS", "TATAMOTORS.NS", "ADANIENT.NS",
+        "BAJAJ-AUTO.NS", "WIPRO.NS", "ONGC.NS", "JSWSTEEL.NS", "HCLTECH.NS",
+        "TATACONSUM.NS", "NESTLEIND.NS", "INDUSINDBK.NS", "COALINDIA.NS", "BPCL.NS",
+        // Additional Nifty 200 stocks
+        "ADANIPORTS.NS", "DRREDDY.NS", "EICHERMOT.NS", "UPL.NS", "TECHM.NS",
+        "SHREECEM.NS", "HEROMOTOCO.NS", "BAJAJFINSV.NS", "CIPLA.NS", "IOC.NS",
+        "VEDL.NS", "GAIL.NS", "BHARTIINFRATEL.NS", "ZEEL.NS", "HINDALCO.NS",
+        "JSWSTEEL.NS", "INDUSINDBK.NS", "TATACONSUM.NS", "NESTLEIND.NS", "COALINDIA.NS",
+        "BPCL.NS", "HDFCLIFE.NS", "DIVISLAB.NS", "GRASIM.NS", "BRITANNIA.NS",
+        "M&M.NS", "TATAPOWER.NS", "AMBUJACEM.NS", "ACC.NS", "PIDILITIND.NS",
+        "BOSCHLTD.NS", "HAVELLS.NS", "ASHOKLEY.NS", "BERGEPAINT.NS", "DABUR.NS",
+        "MARICO.NS", "SRTRANSFIN.NS", "AUROPHARMA.NS", "BIOCON.NS", "CADILAHC.NS",
+        "PAGEIND.NS", "TORNTPHARM.NS", "GLENMARK.NS", "ABB.NS", "AUBANK.NS",
+        "BANKBARODA.NS", "BATAINDIA.NS", "BEL.NS", "BHEL.NS", "BHARATFORG.NS",
+        "CANBK.NS", "CHOLAFIN.NS", "COLPAL.NS", "CONCOR.NS", "CUMMINSIND.NS",
+        "DLF.NS", "EMAMILTD.NS", "ESCORTS.NS", "EXIDEIND.NS", "FEDERALBNK.NS",
+        "GODREJCP.NS", "GODREJPROP.NS", "HINDPETRO.NS", "ICICIPRULI.NS", "IDEA.NS",
+        "IDFC.NS", "IDFCFIRSTB.NS", "IGL.NS", "INDIANB.NS", "INDIGO.NS",
+        "JINDALSTEL.NS", "JUBLFOOD.NS", "L&TFH.NS", "LUPIN.NS", "M&MFIN.NS",
+        "MANAPPURAM.NS", "MRF.NS", "MUTHOOTFIN.NS", "NMDC.NS", "OIL.NS",
+        "OFSS.NS", "PETRONET.NS", "PFC.NS", "PNB.NS", "RBLBANK.NS",
+        "SAIL.NS", "SIEMENS.NS", "SRF.NS", "SUNTV.NS", "TATACHEM.NS",
+        "TATACOMM.NS", "TVSMOTOR.NS", "UBL.NS", "VOLTAS.NS", "WOCKPHARMA.NS"
+    ],
+    nifty500: [
+        // Nifty 200 stocks first
+        "^NSEI", "RELIANCE.NS", "TCS.NS", /* ... all Nifty 200 stocks ... */,
+        // Additional Nifty 500 stocks
+        "3MINDIA.NS", "AARTIIND.NS", "ABFRL.NS", "ADANIGREEN.NS", "ADANITRANS.NS",
+        "AIAENG.NS", "APOLLOHOSP.NS", "APOLLOTYRE.NS", "ASHOKA.NS", "ASTERDM.NS",
+        "ASTRAL.NS", "ATUL.NS", "AVANTIFEED.NS", "BAJAJELEC.NS", "BALKRISIND.NS",
+        "BALRAMCHIN.NS", "BANDHANBNK.NS", "BBTC.NS", "BCG.NS", "BDL.NS",
+        "BEML.NS", "BLUEDART.NS", "BLUESTARCO.NS", "BOMDYEING.NS", "BORORENEW.NS",
+        "BRIGADE.NS", "BSOFT.NS", "CASTROLIND.NS", "CCL.NS", "CEATLTD.NS",
+        "CENTRALBK.NS", "CENTURYPLY.NS", "CENTURYTEX.NS", "CERA.NS", "CESC.NS",
+        "CHAMBLFERT.NS", "COROMANDEL.NS", "CRISIL.NS", "CROMPTON.NS", "CYIENT.NS",
+        "DCBBANK.NS", "DCMSHRIRAM.NS", "DEEPAKNTR.NS", "DELTACORP.NS", "DHANUKA.NS",
+        "DISHTV.NS", "DIXON.NS", "EDELWEISS.NS", "EIHOTEL.NS", "ENDURANCE.NS",
+        "ENGINERSIN.NS", "EQUITAS.NS", "ERIS.NS", "ESSELPACK.NS", "FDC.NS",
+        "FORTIS.NS", "FRETAIL.NS", "FSL.NS", "GEPIL.NS", "GILLETTE.NS",
+        "GMMPFAUDLR.NS", "GMRINFRA.NS", "GNFC.NS", "GPPL.NS", "GRANULES.NS",
+        "GRAPHITE.NS", "GSFC.NS", "GSPL.NS", "GUJGASLTD.NS", "HATHWAY.NS",
+        "HCL-INSYS.NS", "HDFCAMC.NS", "HEG.NS", "HEIDELBERG.NS", "HFCL.NS",
+        "HINDCOPPER.NS", "HINDZINC.NS", "HUDCO.NS", "IBULHSGFIN.NS", "ICIL.NS",
+        "IDBI.NS", "IFBIND.NS", "IIFL.NS", "INDIACEM.NS", "INFIBEAM.NS",
+        "IPCALAB.NS", "IRB.NS", "JBCHEPHARM.NS", "JKCEMENT.NS", "JKLAKSHMI.NS",
+        "JMFINANCIL.NS", "JSWENERGY.NS", "JUSTDIAL.NS", "KAJARIACER.NS", "KANSAINER.NS",
+        "KARURVYSYA.NS", "KEC.NS", "KEI.NS", "KFINTECH.NS", "KPITTECH.NS",
+        "KRBL.NS", "KSB.NS", "LAURUSLABS.NS", "LEMONTREE.NS", "LICHSGFIN.NS",
+        "LINDEINDIA.NS", "LTTS.NS", "MAXHEALTH.NS", "MCDOWELL-N.NS", "MCX.NS",
+        "METROPOLIS.NS", "MFSL.NS", "MINDTREE.NS", "MOTHERSUMI.NS", "MPHASIS.NS",
+        "NAM-INDIA.NS", "NBCC.NS", "NCC.NS", "NESCO.NS", "NHPC.NS",
+        "NIACL.NS", "NLCINDIA.NS", "OBEROIRLTY.NS", "PERSISTENT.NS", "PFIZER.NS",
+        "PHOENIXLTD.NS", "PIIND.NS", "POLYCAB.NS", "PRAJIND.NS", "PRESTIGE.NS",
+        "PRSMJOHNSN.NS", "PSB.NS", "RAMCOCEM.NS", "RELAXO.NS", "RELINFRA.NS",
+        "REPCOHOME.NS", "RVNL.NS", "SANOFI.NS", "SCHAEFFLER.NS", "SCHNEIDER.NS",
+        "SOBHA.NS", "SOLARINDS.NS", "SONATSOFTW.NS", "SPARC.NS", "STAR.NS",
+        "SUPREMEIND.NS", "SUZLON.NS", "SYNGENE.NS", "TATAELXSI.NS", "THERMAX.NS",
+        "THYROCARE.NS", "TORNTPOWER.NS", "TRENT.NS", "TV18BRDCST.NS", "UCOBANK.NS",
+        "UFLEX.NS", "UNIONBANK.NS", "VAIBHAVGBL.NS", "VAKRANGEE.NS", "VBL.NS",
+        "VGUARD.NS", "VIPIND.NS", "WABCOINDIA.NS", "WHIRLPOOL.NS", "ZENSARTECH.NS",
+        "ZYDUSWELL.NS"
+    ],
+    all: [
+        // All stocks from your main list plus additional ones
+        "^NSEI", "^NSEBANK", "NIFTY_MIDCAP_100.NS", "^BSESN", 
+        "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
+        "HINDUNILVR.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "LICI.NS",
+        "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "ASIANPAINT.NS",
+        "MARUTI.NS", "TITAN.NS", "BAJFINANCE.NS", "TATASTEEL.NS", "POWERGRID.NS",
+        "NTPC.NS", "ULTRACEMCO.NS", "SUNPHARMA.NS", "TATAMOTORS.NS", "ADANIENT.NS",
+        "BAJAJ-AUTO.NS", "WIPRO.NS", "ONGC.NS", "JSWSTEEL.NS", "HCLTECH.NS",
+        "TATACONSUM.NS", "NESTLEIND.NS", "INDUSINDBK.NS", "COALINDIA.NS", "BPCL.NS",
+        // Add any additional stocks you want to include
+        "ADANIPORTS.NS", "DRREDDY.NS", "EICHERMOT.NS", "UPL.NS", "TECHM.NS",
+        "SHREECEM.NS", "HEROMOTOCO.NS", "BAJAJFINSV.NS", "CIPLA.NS", "IOC.NS",
+        "VEDL.NS", "GAIL.NS", "BHARTIINFRATEL.NS", "ZEEL.NS", "HINDALCO.NS",
+        // ... more stocks as needed
+    ]
+};    
+
+    
+    // Predefined strategies
+    const PREDEFINED_STRATEGIES = {
+        swing: {
+            name: "Swing Trading Strategy",
+            description: "EMA9 ≥ EMA20 with Close crossing above EMA9, RSI(14) crossing above its EMA20, Volume > 100k, % Change < 10, Close > 60",
+            segment: "nifty500",
+            trendFilter: "bullish",
+            conditions: [
+                { timeframe: "1d", leftOperand: "ema9", operator: ">=", rightOperandType: "indicator", rightOperand: "ema20" },
+                { timeframe: "1d", leftOperand: "close", operator: "crossed_above", rightOperandType: "indicator", rightOperand: "ema9" },
+                { timeframe: "1d", leftOperand: "rsi", operator: "crossed_above", rightOperandType: "indicator", rightOperand: "rsi_ema20" },
+                { timeframe: "1d", leftOperand: "volume", operator: ">", rightOperandType: "value", rightOperand: 100000 },
+                { timeframe: "1d", leftOperand: "pct_change", operator: "<", rightOperandType: "value", rightOperand: 10 },
+                { timeframe: "1d", leftOperand: "close", operator: ">", rightOperandType: "value", rightOperand: 60 }
+            ]
+        },
+        intraday: {
+            name: "Intraday Breakout",
+            description: "5-minute breakout strategy with volume confirmation",
+            segment: "nifty200",
+            trendFilter: "bullish",
+            conditions: [
+                { timeframe: "5m", leftOperand: "close", operator: ">", rightOperandType: "indicator", rightOperand: "high" },
+                { timeframe: "5m", leftOperand: "volume", operator: ">", rightOperandType: "indicator", rightOperand: "volume_avg_20" }
+            ]
+        },
+        momentum: {
+            name: "Momentum Strategy",
+            description: "Price above EMA20 with increasing volume",
+            segment: "nifty500",
+            trendFilter: "bullish",
+            conditions: [
+                { timeframe: "1d", leftOperand: "close", operator: ">", rightOperandType: "indicator", rightOperand: "ema20" },
+                { timeframe: "1d", leftOperand: "volume", operator: ">", rightOperandType: "indicator", rightOperand: "volume_avg_20" }
+            ]
+        },
+        custom: {
+            name: "Custom Strategy",
+            description: "Build your own custom strategy",
+            segment: "nifty50",
+            trendFilter: "all",
+            conditions: []
+        }
+    };
+    
+    // Add condition row
+    let conditionCount = 0;
+    document.getElementById('add-condition').addEventListener('click', function() {
+        addConditionRow();
+    });
+    
+    function addConditionRow() {
+        const wrapper = document.getElementById('conditions-wrapper');
+        const conditionId = 'condition-' + conditionCount;
+        
+        // Create condition row
+        const conditionDiv = document.createElement('div');
+        conditionDiv.className = 'condition-row';
+        conditionDiv.id = conditionId;
+        
+        // Timeframe selector
+        const timeframeSelect = document.createElement('select');
+        timeframeSelect.className = 'condition-timeframe';
+        timeframes.forEach(tf => {
+            timeframeSelect.innerHTML += `<option value="${tf.value}">${tf.name}</option>`;
+        });
+        
+        // Left operand (indicator)
+        const leftOperandSelect = document.createElement('select');
+        leftOperandSelect.className = 'indicator-select left-operand';
+        indicators.forEach(ind => {
+            leftOperandSelect.innerHTML += `<option value="${ind.value}">${ind.name}</option>`;
+        });
+        
+        // Operator
+        const operatorSelect = document.createElement('select');
+        operatorSelect.className = 'operator-select';
+        operators.forEach(op => {
+            operatorSelect.innerHTML += `<option value="${op.value}">${op.name}</option>`;
+        });
+        
+        // Right operand (value or another indicator)
+        const rightOperandTypeSelect = document.createElement('select');
+        rightOperandTypeSelect.className = 'right-operand-type';
+        rightOperandTypeSelect.innerHTML = `
+            <option value="value">Value</option>
+            <option value="indicator">Indicator</option>
+        `;
+        
+        const rightOperandValue = document.createElement('input');
+        rightOperandValue.type = 'number';
+        rightOperandValue.className = 'value-input right-operand-value';
+        rightOperandValue.placeholder = 'Value';
+        rightOperandValue.step = '0.01';
+        
+        const rightOperandIndicator = document.createElement('select');
+        rightOperandIndicator.className = 'indicator-select right-operand-indicator';
+        rightOperandIndicator.style.display = 'none';
+        indicators.forEach(ind => {
+            rightOperandIndicator.innerHTML += `<option value="${ind.value}">${ind.name}</option>`;
+        });
+        
+        // Right operand container
+        const rightOperandContainer = document.createElement('div');
+        rightOperandContainer.className = 'right-operand-container';
+        rightOperandContainer.appendChild(rightOperandValue);
+        rightOperandContainer.appendChild(rightOperandIndicator);
+        
+        // Remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-condition-btn';
+        removeBtn.innerHTML = '×';
+        removeBtn.addEventListener('click', function() {
+            removeCondition(conditionId);
+        });
+        
+        // Build condition row
+        conditionDiv.appendChild(timeframeSelect);
+        conditionDiv.appendChild(leftOperandSelect);
+        conditionDiv.appendChild(operatorSelect);
+        conditionDiv.appendChild(rightOperandTypeSelect);
+        conditionDiv.appendChild(rightOperandContainer);
+        conditionDiv.appendChild(removeBtn);
+        
+        wrapper.appendChild(conditionDiv);
+        
+        // Add event listener for right operand type change
+        rightOperandTypeSelect.addEventListener('change', function() {
+            const value = this.value;
+            rightOperandValue.style.display = value === 'value' ? 'block' : 'none';
+            rightOperandIndicator.style.display = value === 'indicator' ? 'block' : 'none';
+        });
+        
+        conditionCount++;
+    }
+    
+    function removeCondition(conditionId) {
+        const wrapper = document.getElementById('conditions-wrapper');
+        const conditionDiv = document.getElementById(conditionId);
+        if (conditionDiv) {
+            wrapper.removeChild(conditionDiv);
+            conditionCount--;
+        }
+    }
+    
+    // Load predefined strategy
+    function loadPredefinedStrategy(strategyKey) {
+        const strategy = PREDEFINED_STRATEGIES[strategyKey];
+        
+        // Set basic info
+        document.getElementById('strategy-name').value = strategy.name;
+        document.getElementById('segment').value = strategy.segment;
+        document.getElementById('strategy-type').value = strategy.trendFilter;
+        document.getElementById('strategy-description').textContent = strategy.description;
+        
+        // Clear existing conditions
+        document.getElementById('conditions-wrapper').innerHTML = '';
+        conditionCount = 0;
+        
+        // Add conditions
+        strategy.conditions.forEach(condition => {
+            addConditionRow();
+            
+            // Get the newly added condition row
+            const conditionId = 'condition-' + (conditionCount - 1);
+            const conditionDiv = document.getElementById(conditionId);
+            
+            // Set timeframe
+            conditionDiv.querySelector('.condition-timeframe').value = condition.timeframe;
+            
+            // Set left operand
+            conditionDiv.querySelector('.left-operand').value = condition.leftOperand;
+            
+            // Set operator
+            conditionDiv.querySelector('.operator-select').value = condition.operator;
+            
+            // Set right operand type and value
+            const rightOperandTypeSelect = conditionDiv.querySelector('.right-operand-type');
+            rightOperandTypeSelect.value = condition.rightOperandType;
+            
+            // Trigger change event to show the correct right operand input
+            rightOperandTypeSelect.dispatchEvent(new Event('change'));
+            
+            if (condition.rightOperandType === 'value') {
+                conditionDiv.querySelector('.right-operand-value').value = condition.rightOperand;
+            } else if (condition.rightOperandType === 'indicator') {
+                conditionDiv.querySelector('.right-operand-indicator').value = condition.rightOperand;
+            }
+        });
+        
+        // Highlight selected strategy button
+        document.querySelectorAll('.strategy-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`.strategy-btn[data-strategy="${strategyKey}"]`).classList.add('active');
+    }
+    
+    // Save scan strategy
+    document.getElementById('save-scan').addEventListener('click', function() {
+        const strategyName = document.getElementById('strategy-name').value.trim();
+        if (!strategyName) {
+            alert('Please enter a name for your scan');
+            return;
+        }
+        
+        const conditions = collectConditions();
+        if (conditions.length === 0) {
+            alert('Please add at least one condition');
+            return;
+        }
+        
+        const scanConfig = {
+            name: strategyName,
+            segment: document.getElementById('segment').value,
+            trendFilter: document.getElementById('strategy-type').value,
+            conditions: conditions,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Save to localStorage
+        let savedScans = JSON.parse(localStorage.getItem('savedScans') || '[]');
+        savedScans.push(scanConfig);
+        localStorage.setItem('savedScans', JSON.stringify(savedScans));
+        
+        alert(`Scan "${strategyName}" saved successfully!`);
+        showSavedScans();
+    });
+    
+    // Test scan conditions
+    document.getElementById('test-scan').addEventListener('click', function() {
+        const conditions = collectConditions();
+        if (conditions.length === 0) {
+            alert('Please add at least one condition');
+            return;
+        }
+        
+        alert('Conditions will be tested when you run the scan:\n\n' + 
+              JSON.stringify(conditions, null, 2));
+    });
+    
+    // Run scan
+    document.getElementById('run-scan').addEventListener('click', async function() {
+        const conditions = collectConditions();
+        if (conditions.length === 0) {
+            alert('Please add at least one condition');
+            return;
+        }
+        
+        const segment = document.getElementById('segment').value;
+        const trendFilter = document.getElementById('strategy-type').value;
+        
+        // Show loading state
+        const runBtn = document.getElementById('run-scan');
+        runBtn.textContent = 'Running...';
+        runBtn.disabled = true;
+        
+        // Show progress bar
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        
+        try {
+            // Get stocks for selected segment
+            const stocks = STOCK_LISTS[segment] || STOCK_LISTS['nifty50'];
+            const totalStocks = stocks.length;
+            let processed = 0;
+            let results = [];
+            
+            // Process stocks in batches to prevent UI freezing
+            const BATCH_SIZE = 5;
+            for (let i = 0; i < stocks.length; i += BATCH_SIZE) {
+                const batch = stocks.slice(i, i + BATCH_SIZE);
+                
+                // Simulate fetching data (replace with actual API call)
+                const batchResults = await simulateFetchStockData(batch, conditions);
+                
+                // Filter based on conditions
+                const filteredResults = batchResults.filter(stock => {
+                    // Apply trend filter first
+                    if (trendFilter === 'bullish' && stock.trend !== 'Bullish') return false;
+                    if (trendFilter === 'bearish' && stock.trend !== 'Bearish') return false;
+                    
+                    // Apply all conditions (simplified for demo)
+                    return true;
+                });
+                
+                results = results.concat(filteredResults);
+                
+                // Update progress
+                processed += batch.length;
+                const progress = Math.round((processed / totalStocks) * 100);
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                
+                // Small delay to allow UI to update
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            displayResults(results);
+            
+        } catch (error) {
+            console.error('Scan error:', error);
+            alert('Scan failed: ' + error.message);
+        } finally {
+            runBtn.textContent = 'Run Scan';
+            runBtn.disabled = false;
+            progressContainer.style.display = 'none';
+        }
+    });
+    
+    // Simulate fetching stock data (replace with actual API call)
+    function simulateFetchStockData(stocks, conditions) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const results = stocks.map(symbol => ({
+                    symbol: symbol.replace('.NS', '').replace('^', ''),
+                    '1d_close': Math.random() * 1000 + 100,
+                    '1d_open': Math.random() * 1000 + 100,
+                    '1d_volume': Math.floor(Math.random() * 1000000),
+                    '1d_trend': Math.random() > 0.5 ? 'Bullish' : 'Bearish',
+                    '1d_ema9': Math.random() * 1000 + 100,
+                    '1d_ema20': Math.random() * 1000 + 100,
+                    '1d_rsi': Math.random() * 100,
+                    '1d_rsi_ema20': Math.random() * 100,
+                    '1d_pct_change': (Math.random() * 20) - 10
+                }));
+                resolve(results);
+            }, 500);
+        });
+    }
+    
+    // Collect all conditions from the form
+    function collectConditions() {
+        const conditions = [];
+        const conditionRows = document.querySelectorAll('.condition-row');
+        
+        conditionRows.forEach(row => {
+            const timeframe = row.querySelector('.condition-timeframe').value;
+            const leftOperand = row.querySelector('.left-operand').value;
+            const operator = row.querySelector('.operator-select').value;
+            const rightOperandType = row.querySelector('.right-operand-type').value;
+            
+            let rightOperand = null;
+            
+            if (rightOperandType === 'value') {
+                rightOperand = parseFloat(row.querySelector('.right-operand-value').value);
+                if (isNaN(rightOperand)) {
+                    alert('Please enter a valid number for the condition value');
+                    throw new Error('Invalid condition value');
+                }
+            } else if (rightOperandType === 'indicator') {
+                rightOperand = row.querySelector('.right-operand-indicator').value;
+            }
+            
+            conditions.push({
+                timeframe: timeframe,
+                leftOperand: leftOperand,
+                operator: operator,
+                rightOperandType: rightOperandType,
+                rightOperand: rightOperand
+            });
+        });
+        
+        return conditions;
+    }
+    
+    // Display results in the table
+    function displayResults(stocks) {
+        const resultsBody = document.getElementById('results-body');
+        resultsBody.innerHTML = '';
+        
+        if (stocks.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="7" style="text-align: center;">No stocks matching your criteria</td>';
+            resultsBody.appendChild(row);
+            document.getElementById('scan-results').style.display = 'table';
+            return;
+        }
+        
+        // Populate results
+        stocks.forEach(stock => {
+            const row = document.createElement('tr');
+            
+            // Create chart URL for daily timeframe
+            let chartUrl;
+            if (stock.symbol === "NSEI") {
+                chartUrl = `https://www.tradingview.com/chart/?symbol=NSE:NIFTY&interval=1D`;
+            } else if (stock.symbol === "NSEBANK") {
+                chartUrl = `https://www.tradingview.com/chart/?symbol=NSE:BANKNIFTY&interval=1D`;
+            } else if (stock.symbol === "BSESN") {
+                chartUrl = `https://www.tradingview.com/chart/?symbol=BSE:SENSEX&interval=1D`;
+            } else {
+                chartUrl = `https://www.tradingview.com/chart/?symbol=NSE:${stock.symbol}&interval=1D`;
+            }
+            
+            const trendClass = stock['1d_trend'] === 'Bullish' ? 'trend-bullish' : 
+                             (stock['1d_trend'] === 'Bearish' ? 'trend-bearish' : '');
+            
+            row.innerHTML = `
+                <td><a href="${chartUrl}" target="_blank">${stock.symbol}</a></td>
+                <td>${stock['1d_close'].toFixed(2)}</td>
+                <td>${stock['1d_open'].toFixed(2)}</td>
+                <td class="${stock['1d_close'] > stock['1d_open'] ? 'price-up' : 'price-down'}">
+                    ${stock['1d_close'].toFixed(2)}
+                </td>
+                <td>${stock['1d_volume'].toLocaleString()}</td>
+                <td class="${trendClass}">${stock['1d_trend']}</td>
+                <td><a href="/screener?timeframe=1d&symbol=${stock.symbol}" target="_blank">View</a></td>
+            `;
+            
+            resultsBody.appendChild(row);
+        });
+        
+        document.getElementById('scan-results').style.display = 'table';
+    }
+    
+    // Show saved scans
+    function showSavedScans() {
+        const savedScans = JSON.parse(localStorage.getItem('savedScans') || '[]');
+        const scanList = document.getElementById('strategy-list');
+        
+        if (savedScans.length === 0) {
+            document.getElementById('saved-strategies').style.display = 'none';
+            return;
+        }
+        
+        scanList.innerHTML = '';
+        savedScans.forEach((scan, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${scan.name} (${scan.segment})</span>
+                <div class="strategy-actions">
+                    <a href="#" class="load-scan" data-index="${index}">Load</a>
+                    <a href="#" class="run-scan" data-index="${index}">Run</a>
+                    <a href="#" class="delete-scan" data-index="${index}">Delete</a>
+                </div>
+            `;
+            scanList.appendChild(li);
+        });
+        
+        // Add event listeners for scan actions
+        document.querySelectorAll('.load-scan').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadScan(parseInt(this.getAttribute('data-index')));
+            });
+        });
+        
+        document.querySelectorAll('.run-scan').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                runScan(parseInt(this.getAttribute('data-index')));
+            });
+        });
+        
+        document.querySelectorAll('.delete-scan').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteScan(parseInt(this.getAttribute('data-index')));
+            });
+        });
+        
+        document.getElementById('saved-strategies').style.display = 'block';
+    }
+    
+    // Load a saved scan
+    function loadScan(index) {
+        const savedScans = JSON.parse(localStorage.getItem('savedScans') || '[]');
+        if (index >= savedScans.length) return;
+        
+        const scan = savedScans[index];
+        
+        // Set basic info
+        document.getElementById('strategy-name').value = scan.name;
+        document.getElementById('segment').value = scan.segment;
+        document.getElementById('strategy-type').value = scan.trendFilter;
+        
+        // Clear existing conditions
+        document.getElementById('conditions-wrapper').innerHTML = '';
+        conditionCount = 0;
+        
+        // Add conditions
+        scan.conditions.forEach(condition => {
+            addConditionRow();
+            
+            // Get the newly added condition row
+            const conditionId = 'condition-' + (conditionCount - 1);
+            const conditionDiv = document.getElementById(conditionId);
+            
+            // Set timeframe
+            conditionDiv.querySelector('.condition-timeframe').value = condition.timeframe;
+            
+            // Set left operand
+            conditionDiv.querySelector('.left-operand').value = condition.leftOperand;
+            
+            // Set operator
+            conditionDiv.querySelector('.operator-select').value = condition.operator;
+            
+            // Set right operand type and value
+            const rightOperandTypeSelect = conditionDiv.querySelector('.right-operand-type');
+            rightOperandTypeSelect.value = condition.rightOperandType;
+            
+            // Trigger change event to show the correct right operand input
+            rightOperandTypeSelect.dispatchEvent(new Event('change'));
+            
+            if (condition.rightOperandType === 'value') {
+                conditionDiv.querySelector('.right-operand-value').value = condition.rightOperand;
+            } else if (condition.rightOperandType === 'indicator') {
+                conditionDiv.querySelector('.right-operand-indicator').value = condition.rightOperand;
+            }
+        });
+        
+        alert(`Scan "${scan.name}" loaded!`);
+    }
+    
+    // Run a saved scan
+    function runScan(index) {
+        loadScan(index);
+        document.getElementById('run-scan').click();
+    }
+    
+    // Delete a saved scan
+    function deleteScan(index) {
+        if (!confirm('Are you sure you want to delete this scan?')) return;
+        
+        const savedScans = JSON.parse(localStorage.getItem('savedScans') || '[]');
+        if (index >= savedScans.length) return;
+        
+        savedScans.splice(index, 1);
+        localStorage.setItem('savedScans', JSON.stringify(savedScans));
+        
+        showSavedScans();
+    }
+    
+    // Add event listeners for strategy buttons
+    document.querySelectorAll('.strategy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const strategyKey = this.getAttribute('data-strategy');
+            loadPredefinedStrategy(strategyKey);
+        });
+    });
+    
+    // Initialize by showing saved scans if any
+    showSavedScans();
+    
+    // Add first condition row by default
+    addConditionRow();
+});
+</script>
+{% endblock %}
